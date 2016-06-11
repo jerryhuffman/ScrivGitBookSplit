@@ -17,11 +17,16 @@ namespace ScrivGitBookSplit
 
                 //string strOutPath = "C:\\tmp";
                 string strInFileName = Path.GetFullPath(strArg1);
-                string strOutPath = Path.GetDirectoryName(strArg1);
+
+                int intPos = strInFileName.LastIndexOf("Draft");
+
+                int intLen = strInFileName.Length - (strInFileName.Length - intPos);
+
+                string strOutFilePath = strInFileName.Substring(0, intLen);
+
+                string strOutPath = Path.GetDirectoryName(strOutFilePath);
 
                 Split(strInFileName, strOutPath);
-
-
             }
             catch (Exception Ex)
             {
@@ -32,26 +37,42 @@ namespace ScrivGitBookSplit
 
         public static void Split(string strInFile, string strOutputFilePath)
         {
-            System.IO.StreamWriter swOutFile = null;
-            string strLine = null;
-            string strOutFileName = String.Empty;
+            //System.IO.StreamWriter swOutFile0 = null;
+            //string strOutFileName = String.Empty;
 
-            string strFileName = Path.GetFileName(strInFile);
+            //string strFileName0 = Path.GetFileName(strInFile);
 
-            strOutputFilePath = strOutputFilePath + "\\Manuscript";
+            //string strOutputFilePath0 = strOutputFilePath + "\\Manuscript";
 
-            bool boolExists = Directory.Exists(strOutputFilePath);
+            //string strOutFileName0 = strOutputFilePath0 + "\\" + strFileName0;
+
+            ////string strOutFileName1 = strOutputFilePath1 + "\\" + strFileName;
+
+            //FileStream fs0 = new FileStream(strOutFileName0, FileMode.Create, FileAccess.ReadWrite);
+
+            //System.IO.StreamWriter swOutFile0 = new StreamWriter(fs0, Encoding.Default);
+
+            string strFileName1 = Path.GetFileNameWithoutExtension(strInFile);
+
+            string strOutputFilePath1 = strOutputFilePath + "\\Library\\Manuscript" + "\\" + strFileName1;
+
+            bool boolExists = Directory.Exists(strOutputFilePath1);
 
             if (boolExists != true)
             {
-                Directory.CreateDirectory(strOutputFilePath);
+                Directory.CreateDirectory(strOutputFilePath1);
             }
 
-            strOutFileName = strOutputFilePath + "\\" + strFileName;
+            string strLine = null;
+            Dictionary<string, string> dicChapterFileName = new Dictionary<string, string>();
 
-            FileStream fs = new FileStream(strOutFileName, FileMode.Create, FileAccess.ReadWrite);
+            dicChapterFileName.Add("Title Page", "README.md");
 
-            swOutFile = new StreamWriter(fs, Encoding.Default);
+            string strOutFileName1 = strOutputFilePath1 + "\\README.md";
+
+            FileStream fs1 = new FileStream(strOutFileName1, FileMode.Create, FileAccess.ReadWrite);
+
+            System.IO.StreamWriter swOutFile1 = new StreamWriter(fs1, Encoding.Default);
 
             try
             {
@@ -86,23 +107,92 @@ namespace ScrivGitBookSplit
                             {
                                 strChapterName = strLine.Substring(intIndex1 + 1, intIndex2 - intIndex1 - 1).Trim();
 
+                                strFileName1 = strChapterName.Replace(" ", "-");
+
+                                strOutFileName1 = strOutputFilePath1 + "\\" + strFileName1 + ".md";
+
+                                dicChapterFileName.Add(strChapterName, strFileName1 + ".md");
+
                                 intState = 2;
                             }
                         }
 
-                        swOutFile.WriteLine(strLine);
+                        if (intState == 2)
+                        {
+                            //fs1.Flush(true);
+                            //fs1.Close();
+                            //fs1.Dispose();
+
+                            swOutFile1.Flush();
+                            swOutFile1.Close();
+                            swOutFile1.Dispose();
+
+                            fs1 = new FileStream(strOutFileName1, FileMode.Create, FileAccess.ReadWrite);
+                            swOutFile1 = new StreamWriter(fs1, Encoding.Default);
+
+                            intState = 0;
+                        }
+
+                        //swOutFile0.WriteLine(strLine);
+                        swOutFile1.WriteLine(strLine);
 
                         //intState = 0;
                     }
+
+                    if (dicChapterFileName.Count() > 0)
+                    {
+                        swOutFile1.Flush();
+                        swOutFile1.Close();
+                        swOutFile1.Dispose();
+
+                        strOutFileName1 = strOutputFilePath1 + "\\SUMMARY.md";
+
+                        fs1 = new FileStream(strOutFileName1, FileMode.Create, FileAccess.ReadWrite);
+                        swOutFile1 = new StreamWriter(fs1, Encoding.Default);
+
+                        swOutFile1.WriteLine("# Summary\r\n");
+
+                        foreach (KeyValuePair<string, string> kvpChapterFileName in dicChapterFileName)
+                        {
+                            swOutFile1.WriteLine("* [" + kvpChapterFileName.Key + "](" + kvpChapterFileName.Value + ")");
+                        }
+                    }
                 }
             }
-            finally
+            //finally
+            //{
+            ////    if (swOutFile0 != null)
+            ////    {
+            ////        swOutFile0.Dispose();
+            ////    }
+
+            //    if (swOutFile1 != null)
+            //    {
+            //        swOutFile1.Dispose();
+            //    }
+            //}
+            catch (Exception Ex)
             {
-                if (swOutFile != null)
-                {
-                    swOutFile.Dispose();
-                }
+                string strMessage = Ex.Message;
+
+                ////if (swOutFile0 != null)
+                ////{
+                ////    swOutFile0.Dispose();
+                ////}
+
+                //if (swOutFile1 != null)
+                //{
+                //    swOutFile1.Dispose();
+                //}
             }
+
+            //swOutFile0.Flush();
+            //swOutFile0.Close();
+            //swOutFile0.Dispose();
+
+            swOutFile1.Flush();
+            swOutFile1.Close();
+            swOutFile1.Dispose();
         }
     }
 }
